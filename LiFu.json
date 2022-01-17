@@ -1,0 +1,17 @@
+{
+  "Author": "",
+  "Name": "LiFu",
+  "Punchline": "LiFu",
+  "Description": "LiFu",
+  "IconUrl": "",
+  "ImageUrls": [
+    ""
+  ],
+  "RepoUrl": "",
+  "InternalName": "LiFu",
+  "AssemblyVersion": "",
+  "ApplicableVersion": "any",
+  "DalamudApiLevel": 4,
+  "LoadPriority": 0,
+  "Changelog": "Updated for API4"
+}
