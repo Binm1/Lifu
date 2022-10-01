@@ -70,22 +70,20 @@ namespace Lifu
             this.config.Initialize();
             Int16* canshu = stackalloc Int16[0x20];
             接任务参数 = DalamudApi.SigScanner.GetStaticAddressFromSig("48 89 05 ?? ?? ?? ?? 48 8B 0D ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 45 84 ED"); 
-            jiaoHook ??=new Hook<JiaoHook>(DalamudApi.SigScanner.ScanText("E8 ?? ?? ?? ?? 0F B6 D8 EB 06"), new JiaoHook(JiaoDetour));
+            jiaoHook ??=Hook<JiaoHook>.FromAddress(DalamudApi.SigScanner.ScanText("E8 ?? ?? ?? ?? 0F B6 D8 EB 06"), new JiaoHook(JiaoDetour));
             jiaoHook.Enable();
-            xuanHook ??= new Hook<XuanHook>(DalamudApi.SigScanner.ScanText("E8 ?? ?? ?? ?? EB 10 48 8B 0D ?? ?? ?? ??"), new XuanHook(XuanDetour));
+            xuanHook ??= Hook<XuanHook>.FromAddress(DalamudApi.SigScanner.ScanText("E8 ?? ?? ?? ?? EB 10 48 8B 0D ?? ?? ?? ??"), new XuanHook(XuanDetour));
             xuanHook.Enable();
-            tiJiaoHook ??= new Hook<TiJiaoHook>(DalamudApi.SigScanner.ScanText("E8 ?? ?? ?? ?? 8B 4D A3 8B D8"), new TiJiaoHook(TiJiaoDetour));
-            tiJiaoHook.Enable();
-            var a = DalamudApi.SigScanner.ScanText("E8 ?? ?? ?? ?? 8B 4D A3 8B D8");
-            //Print(a.ToString("X4"));
-            huoQuHook ??= new Hook<HuoQuHook>(DalamudApi.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 8D BB ?? ?? ?? ?? 33 D2 8D 4E 10"), new HuoQuHook(HuoQuDetour));
+			tiJiaoHook ??=Hook<TiJiaoHook>.FromAddress(DalamudApi.SigScanner.ScanText("E8 ?? ?? ?? ?? 8B 4D A7 8B F8"), new TiJiaoHook(TiJiaoDetour));
+			tiJiaoHook.Enable();
+            huoQuHook ??=Hook<HuoQuHook>.FromAddress(DalamudApi.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 8D BB ?? ?? ?? ?? 33 D2 8D 4E 10"), new HuoQuHook(HuoQuDetour));
             huoQuHook.Enable();
             Enabled = false;
-            this.accessGameObject = Marshal.GetDelegateForFunctionPointer<AccessGameObjDelegate>(DalamudApi.SigScanner.ScanText("48 89 5c 24 08 48 89 74 24 10 57 48 83 ec 20 48 8b f1 41 0f b6 f8 48 8b ca 48 8b da"));
-            this.config.undiyici = false;
+			this.accessGameObject = Marshal.GetDelegateForFunctionPointer<AccessGameObjDelegate>(DalamudApi.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 85 F6 74 7B"));
+			this.config.undiyici = false;
             理符 = DalamudApi.SigScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 83 C4 28 E9 ?? ?? ?? ?? 48 83 EC 28 33 D2") + 0x98e0 + 0xa8 + 0x54;
             clickManager = new ClickManager(this);
-            RenWuHook ??= new Hook<RenWuDelegate>(DalamudApi.SigScanner.ScanText("40 55 56 57 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 ?? 8B ?? 49 8B ??"), new RenWuDelegate(RenWuDetour));
+            RenWuHook ??= Hook<RenWuDelegate>.FromAddress(DalamudApi.SigScanner.ScanText("40 55 56 57 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 ?? 8B ?? 49 8B ??"), new RenWuDelegate(RenWuDetour));
             RenWuHook.Enable();
             提交参数1 = (long)DalamudApi.SigScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 83 C4 28 E9 ?? ?? ?? ?? 8B 05 ?? ?? ?? ?? 89 05 ?? ?? ?? ?? C3 CC CC CC 8B 05 ?? ?? ?? ?? 89 05 ?? ?? ?? ?? C3 CC CC CC F3 0F 10 05 ?? ?? ?? ??");
             var abc = Marshal.ReadInt64((IntPtr)(提交参数1 + 0x1e08));
@@ -262,7 +260,7 @@ namespace Lifu
                 var abc = HasLeve();
                 if (hasLiFu == true||abc)
                 {
-                    clickManager.SendClick(addon, ClickManager.EventType.MOUSE_CLICK, 0, ((AddonTalk*)talkAddon)->AtkStage);
+                    clickManager.SendClick(addon, ClickManager.EventType.MOUSE_CLICK, 0, ((AddonTalk*)talkAddon)->AtkResNode230);
                 }
                 else
                 {
@@ -277,7 +275,7 @@ namespace Lifu
             }
             else
             {
-                clickManager.SendClick(addon, ClickManager.EventType.MOUSE_CLICK, 0, ((AddonTalk*)talkAddon)->AtkStage);
+                clickManager.SendClick(addon, ClickManager.EventType.MOUSE_CLICK, 0, ((AddonTalk*)talkAddon)->AtkResNode230);
             }
             //var imageNode = (AtkImageNode*)talkAddon->UldManager.NodeList[14];
             //if (imageNode->PartsList->Parts[imageNode->PartId].U != 288) return;
@@ -485,7 +483,7 @@ namespace Lifu
 
         bool HasLeve()
         {
-            var holder = ((UIModule*)DalamudApi.GameGui.GetUIModule())->RaptureAtkModule.AtkModule.AtkArrayDataHolder;
+            var holder = ((UIModule*)DalamudApi.GameGui.GetUIModule())->GetRaptureAtkModule()->AtkModule.AtkArrayDataHolder;
             
             var size = holder.StringArrays[22]->AtkArrayData.Size;
             var array = holder.StringArrays[22]->StringArray;
@@ -508,7 +506,7 @@ namespace Lifu
                 {
                     var offset = 理符 + 36 * i;
                     var lifu = Marshal.ReadInt32(offset);
-                    if (lifu == 1489)
+                    if (lifu == 1635)
                     {
                        return true;
                     }

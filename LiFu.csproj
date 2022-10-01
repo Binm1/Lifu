@@ -16,11 +16,11 @@
 
   <ItemGroup>
     <Reference Include="Dalamud">
-      <HintPath>E:\Dalamud\6.0.1.3\Dalamud.dll</HintPath>
+      <HintPath>E:\Dalamud\addon\Hooks\dev\Dalamud.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="FFXIVClientStructs">
-      <HintPath>E:\Dalamud\6.0.1.3\FFXIVClientStructs.dll</HintPath>
+      <HintPath>E:\Dalamud\addon\Hooks\dev\FFXIVClientStructs.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>

@@ -87,7 +87,7 @@ namespace Lifu
         {
             var addon = (AddonSelectString*)addonPtr;
             var popupMenu = &addon->PopupMenu;
-            var componentList = popupMenu->List;
+            var componentList = popupMenu->PopupMenu.List;
 
             var arg5 = Marshal.AllocHGlobal(0x40);
             for (var i = 0; i < 0x40; i++)
