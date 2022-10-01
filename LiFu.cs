@@ -26,6 +26,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using Dalamud.Game.ClientState.Conditions;
 using static Lifu.ClickManager;
 using Dalamud.Game.Gui.Toast;
+using System.ComponentModel;
 
 namespace Lifu
 {
@@ -74,20 +75,21 @@ namespace Lifu
             jiaoHook.Enable();
             xuanHook ??= Hook<XuanHook>.FromAddress(DalamudApi.SigScanner.ScanText("E8 ?? ?? ?? ?? EB 10 48 8B 0D ?? ?? ?? ??"), new XuanHook(XuanDetour));
             xuanHook.Enable();
-			tiJiaoHook ??=Hook<TiJiaoHook>.FromAddress(DalamudApi.SigScanner.ScanText("E8 ?? ?? ?? ?? 8B 4D A7 8B F8"), new TiJiaoHook(TiJiaoDetour));
+			tiJiaoHook ??=Hook<TiJiaoHook>.FromAddress(DalamudApi.SigScanner.ScanText("E8 ?? ?? ?? ?? 8B 4D A3 8B D8"), new TiJiaoHook(TiJiaoDetour));
 			tiJiaoHook.Enable();
             huoQuHook ??=Hook<HuoQuHook>.FromAddress(DalamudApi.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 8D BB ?? ?? ?? ?? 33 D2 8D 4E 10"), new HuoQuHook(HuoQuDetour));
             huoQuHook.Enable();
             Enabled = false;
-			this.accessGameObject = Marshal.GetDelegateForFunctionPointer<AccessGameObjDelegate>(DalamudApi.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 85 F6 74 7B"));
+			this.accessGameObject = Marshal.GetDelegateForFunctionPointer<AccessGameObjDelegate>(DalamudApi.SigScanner.ScanText("E9 ?? ?? ?? ?? 48 8B 01 FF 50 08"));
 			this.config.undiyici = false;
-            理符 = DalamudApi.SigScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 83 C4 28 E9 ?? ?? ?? ?? 48 83 EC 28 33 D2") + 0x98e0 + 0xa8 + 0x54;
+            理符 = DalamudApi.SigScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 83 C4 28 E9 ?? ?? ?? ?? 48 83 EC 28 33 D2") + 0xa268 + 0xa8 + 0x54;
             clickManager = new ClickManager(this);
             RenWuHook ??= Hook<RenWuDelegate>.FromAddress(DalamudApi.SigScanner.ScanText("40 55 56 57 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 ?? 8B ?? 49 8B ??"), new RenWuDelegate(RenWuDetour));
             RenWuHook.Enable();
             提交参数1 = (long)DalamudApi.SigScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 83 C4 28 E9 ?? ?? ?? ?? 8B 05 ?? ?? ?? ?? 89 05 ?? ?? ?? ?? C3 CC CC CC 8B 05 ?? ?? ?? ?? 89 05 ?? ?? ?? ?? C3 CC CC CC F3 0F 10 05 ?? ?? ?? ??");
-            var abc = Marshal.ReadInt64((IntPtr)(提交参数1 + 0x1e08));
-            提交参数2 = Marshal.ReadInt64((IntPtr)abc) + 616;
+            var 参数2跳转地址= DalamudApi.SigScanner.GetStaticAddressFromSig("48 8B 05 ?? ?? ?? ?? 4C 8B 40 18 45 8B 40 18");
+            var abc = Marshal.ReadIntPtr( Marshal.ReadIntPtr(参数2跳转地址)+0x70)-0x8+0x10180+0x70; ;
+            提交参数2 = Marshal.ReadInt64( Marshal.ReadIntPtr((IntPtr)abc) + 0x5e8);
             DalamudApi.ChatGui.ChatMessage+= Chat_OnChatMessage;
             raptureAtkUnitManager = AtkStage.GetSingleton()->RaptureAtkUnitManager;
             DalamudApi.Framework.Update += Update;
@@ -139,7 +141,7 @@ namespace Lifu
             Task.Run(() =>
             {
                 var Actors = DalamudApi.ObjectTable.Where(i => i.ObjectKind == Dalamud.Game.ClientState.Objects.Enums.ObjectKind.EventNpc)
-                    .Where(i => i.Name.ToString() == "莫伊丝");
+                    .Where(i => i.Name.ToString() == "阿尔德伊恩");
                 foreach (var actor in Actors)
                 {
                     选中 = actor;
@@ -198,7 +200,7 @@ namespace Lifu
                 var b = Marshal.ReadInt64(接任务参数);
                 if (b > 0)
                 {
-                    jiaoHook.Original(b, 1489);
+                    jiaoHook.Original(b, 1635);
                     接任务.Clear();
                     break;
                 }
@@ -219,7 +221,9 @@ namespace Lifu
                     交易优质道具();
                     TickTalk();
                     TickQuestComplete();
-                }
+                    退出任务();
+
+				}
                 
 
             }
@@ -252,22 +256,24 @@ namespace Lifu
             if (!talkAddon->IsVisible/* || !talkAddon->UldManager.NodeList[14]->IsVisible*/) return;
            
             var questAddon = (AtkUnitBase*)addon;
-            var textComponent = (AtkComponentNode*)questAddon->UldManager.NodeList[16];
+            var textComponent = (AtkComponentNode*)questAddon->UldManager.NodeList[20];
             var a = (AtkTextNode*)textComponent;
-            if ("埃利库鲁" == Marshal.PtrToStringUTF8((IntPtr)a->NodeText.StringPtr))
+
+            if ("格里格" == Marshal.PtrToStringUTF8((IntPtr)a->NodeText.StringPtr))
             {
                 var hasLiFu = HasLiFu();
                 var abc = HasLeve();
                 if (hasLiFu == true||abc)
                 {
-                    clickManager.SendClick(addon, ClickManager.EventType.MOUSE_CLICK, 0, ((AddonTalk*)talkAddon)->AtkResNode230);
+                    clickManager.SendClick(addon, ClickManager.EventType.MOUSE_CLICK, 0, ((AddonTalk*)talkAddon)->AtkEventListenerUnk.AtkStage);
                 }
                 else
                 {
                     var b = Marshal.ReadInt64(接任务参数);
                     if (b > 0)
                     {
-                        jiaoHook.Original(b, 1489);
+                        //1635为巨匠任务在leve.csv里面
+                        jiaoHook.Original(b, 1635);
                     }
                 }
 
@@ -275,7 +281,7 @@ namespace Lifu
             }
             else
             {
-                clickManager.SendClick(addon, ClickManager.EventType.MOUSE_CLICK, 0, ((AddonTalk*)talkAddon)->AtkResNode230);
+                clickManager.SendClick(addon, ClickManager.EventType.MOUSE_CLICK, 0, ((AddonTalk*)talkAddon)->AtkEventListenerUnk.AtkStage);
             }
             //var imageNode = (AtkImageNode*)talkAddon->UldManager.NodeList[14];
             //if (imageNode->PartsList->Parts[imageNode->PartId].U != 288) return;
@@ -306,7 +312,7 @@ namespace Lifu
         }
         void 继续交货()
         {
-            var addon = DalamudApi.GameGui.GetAddonByName("SelectString", 1);
+            var addon = DalamudApi.GameGui.GetAddonByName("SelectIconString", 1);
             if (addon == IntPtr.Zero) return;
             var selectStrAddon = (AtkUnitBase*)addon;
             if (!selectStrAddon->IsVisible)
@@ -316,24 +322,37 @@ namespace Lifu
             }
             if (selectStrAddon->UldManager.NodeListCount <= 3) return;
             var a = (AtkComponentNode*)selectStrAddon->UldManager.NodeList[2];
-            var txt = (AtkTextNode*)selectStrAddon->UldManager.NodeList[3];
-            if ("要继续交货吗？" == Marshal.PtrToStringUTF8((IntPtr)txt->NodeText.StringPtr))
+			var d = (AtkComponentNode*)a->Component->UldManager.NodeList[1];
+			var txt = (AtkTextNode*)d -> Component->UldManager.NodeList[4];
+          
+            if ("制作委托：提高品质用的炼金药" == Marshal.PtrToStringUTF8((IntPtr)txt->NodeText.StringPtr))
             {
-                if (a->Component->UldManager.NodeListCount <= 2) return;
-                var b = (AtkComponentNode*)a->Component->UldManager.NodeList[1];
-                if (b->Component->UldManager.NodeListCount <= 3) return;
-                var c = (AtkTextNode*)b->Component->UldManager.NodeList[3];
-                var abc = Marshal.PtrToStringUTF8((IntPtr)c->NodeText.StringPtr);
-                if ("继续交货" != Marshal.PtrToStringUTF8((IntPtr)c->NodeText.StringPtr)) return;
+
                 clickManager.SelectStringClick(addon, 0);
             }
-            if ("有什么事？" == Marshal.PtrToStringUTF8((IntPtr)txt->NodeText.StringPtr))
-            {
-                clickManager.SelectStringClick(addon, 3);
-            }
+
 
         }
-        void 任务需求()
+		void 退出任务()
+		{
+			var addon = DalamudApi.GameGui.GetAddonByName("SelectString", 1);
+			if (addon == IntPtr.Zero) return;
+			var selectStrAddon = (AtkUnitBase*)addon;
+			if (!selectStrAddon->IsVisible)
+			{
+				//NextClick = Environment.TickCount + 500;
+				return;
+			}
+			if (selectStrAddon->UldManager.NodeListCount <= 3) return;
+			var a = (AtkComponentNode*)selectStrAddon->UldManager.NodeList[2];
+			var txt = (AtkTextNode*)selectStrAddon->UldManager.NodeList[3];
+			if ("有什么事？" == Marshal.PtrToStringUTF8((IntPtr)txt->NodeText.StringPtr))
+			{
+				clickManager.SelectStringClick(addon, 3);
+			}
+
+		}
+		void 任务需求()
         {
             var addon = DalamudApi.GameGui.GetAddonByName("Request", 1);
             if (addon == IntPtr.Zero) return;
@@ -350,19 +369,26 @@ namespace Lifu
             var addonName = focusedAddon != null ? Marshal.PtrToStringAnsi((IntPtr)focusedAddon->Name) : string.Empty;
             if (没提交==true&&提交参数1!=0)
             {
-                tiJiaoHook.Original(提交参数1, 提交参数2, 0x7d5, 0, 0x201);
-            }
-            if (没提交==false)
+                if (提交参数1==0)
+                {
+					var 参数2跳转地址 = DalamudApi.SigScanner.GetStaticAddressFromSig("48 8B 05 ?? ?? ?? ?? 4C 8B 40 18 45 8B 40 18");
+					var abc = Marshal.ReadIntPtr(Marshal.ReadIntPtr(参数2跳转地址) + 0x70) - 0x8 + 0x10180 + 0x70; ;
+					提交参数2 = Marshal.ReadInt64(Marshal.ReadIntPtr((IntPtr)abc) + 0x5e8);
+				}
+                //2005为巨匠
+				tiJiaoHook.Original(提交参数1, 提交参数2, 2005, 0, 1);
+			}
+            if (!没提交)
             {
                 var questAddon = (AtkUnitBase*)addon;
                 var buttonNode = (AtkComponentNode*)questAddon->UldManager.NodeList[4];
                 if (buttonNode->Component->UldManager.NodeListCount <= 2) return;
                 var textComponent = (AtkTextNode*)buttonNode->Component->UldManager.NodeList[2];
                 var abc = Marshal.PtrToStringUTF8((IntPtr)textComponent->NodeText.StringPtr);
+               
                 if ("递交" != Marshal.PtrToStringUTF8((IntPtr)textComponent->NodeText.StringPtr)) return;
                 var eventListener = (AtkEventListener*)addon;
                 var receiveEventAddress = new IntPtr(eventListener->vfunc[2]);
-                //Print(addonName.ToString());
                 //clickManager.SendClickThrottled(addon, EventType.FOCUS_MAX, 2, buttonNode);
                 if (addonName=="Request")
                 {
@@ -412,31 +438,27 @@ namespace Lifu
             string a = array[0];
             switch (a)
             {
-                case "mo":
+                case "aer":
                     DOMo();
                     break;
                 case "xuan":
-                    tiJiaoHook.Original(提交参数1, 提交参数2, 0x7d5, 0, 0x201);
+                    tiJiaoHook.Original(提交参数1, 提交参数2, 2005, 0, 1);
                     break;
                 case "call":
+					交易优质道具();
 
-                    break;
-                case "ai":
+					break;
+                case "ge":
                     Task.Run(() =>
                     {
                         var Actors = DalamudApi.ObjectTable.Where(i => i.ObjectKind == Dalamud.Game.ClientState.Objects.Enums.ObjectKind.EventNpc)
-                            .Where(i => i.Name.ToString() == "埃利库鲁");
+                            .Where(i => i.Name.ToString() == "格里格");
                         foreach (var actor in Actors)
                         {
                             选中 = actor;
                         }
                         accessGameObject(DalamudApi.TargetManager.Address, 选中.Address, (char)0);
-                        //JieRenWu();
-                        //Thread.Sleep(1000);
-                        //MouseDo.SendKeycode((uint)VirtualKey.NUMPAD0);
-                        //Thread.Sleep(100);
                         MouseDo.SendKeycode((uint)VirtualKey.ESCAPE);
-                        //this.config.undiyici = true;
                     });
                     break;
                 case "null":
@@ -492,7 +514,7 @@ namespace Lifu
             {
                 if (array[i] == null) continue;
                 var seString = ReadSeString(array[i]).TextValue;
-                if (seString.Contains("将巨匠药水提交给莫伊丝 3/3")) has = true;
+                if (seString.Contains("将巨匠药酒提交给阿尔德伊恩")) has = true;
             }
             
             return has;
