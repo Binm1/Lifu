@@ -13,76 +13,17 @@ namespace Lifu
 {
     unsafe class ClickManager
     {
-        Lifu p;
         const int ThrottleTime = 500;
 
-        public ClickManager(Lifu p)
-        {
-            this.p = p;
-        }
+        public ClickManager() { }
+
+        protected delegate void ReceiveEventDelegate(IntPtr eventListener, EventType type, uint which, IntPtr target, IntPtr inputData);
+
         protected ReceiveEventDelegate GetReceiveEventDelegate(AtkEventListener* eventListener)
         {
             var receiveEventAddress = new IntPtr(eventListener->vfunc[2]);
             return Marshal.GetDelegateForFunctionPointer<ReceiveEventDelegate>(receiveEventAddress);
         }
-
-        int NextClick = 0;
-        internal void SendClickThrottled(IntPtr arg1, EventType arg2, uint arg3, void* target)
-        {
-            if (Environment.TickCount > NextClick)
-            {
-                SendClick(arg1, arg2, arg3, target, IntPtr.Zero);
-                NextClick = Environment.TickCount + ThrottleTime;
-                //pi.Framework.Gui.Chat.Print("Click Sent");
-            }
-            else
-            {
-                PluginLog.Log("Click Throttled");
-            }
-        }
-        internal void SendClickThrottled(IntPtr arg1, EventType arg2, uint arg3, void* target, IntPtr arg5)
-        {
-            if (Environment.TickCount > NextClick)
-            {
-                SendClick(arg1, arg2, arg3, target, arg5);
-                NextClick = Environment.TickCount + ThrottleTime;
-                //pi.Framework.Gui.Chat.Print("Click Sent 2");
-            }
-            else
-            {
-                PluginLog.Log("Click Throttled 2");
-            }
-        }
-
-        internal void SendClick(IntPtr arg1, EventType arg2, uint arg3, void* target)
-        {
-            SendClick(arg1, arg2, arg3, target, IntPtr.Zero);
-        }
-
-        internal void SendClick(IntPtr arg1, EventType arg2, uint arg3, void* target, IntPtr arg5)
-        {
-            var receiveEvent = GetReceiveEventDelegate((AtkEventListener*)arg1);
-
-            var arg4 = Marshal.AllocHGlobal(0x40);
-            for (var i = 0; i < 0x40; i++)
-                Marshal.WriteByte(arg4, i, 0);
-
-            Marshal.WriteIntPtr(arg4, 0x8, new IntPtr(target));
-            Marshal.WriteIntPtr(arg4, 0x10, arg1);
-
-            if (arg5 == IntPtr.Zero)
-            {
-                arg5 = Marshal.AllocHGlobal(0x40);
-                for (var i = 0; i < 0x40; i++)
-                    Marshal.WriteByte(arg5, i, 0);
-            }
-
-            receiveEvent(arg1, arg2, arg3, arg4, arg5);
-
-            Marshal.FreeHGlobal(arg4);
-            Marshal.FreeHGlobal(arg5);
-        }
-
         internal unsafe void SelectStringClick(IntPtr addonPtr, int index)
         {
             var addon = (AddonSelectString*)addonPtr;
@@ -100,7 +41,50 @@ namespace Lifu
             SendClickThrottled(new IntPtr(popupMenu), EventType.LIST_INDEX_CHANGE, 0, componentList->AtkComponentBase.OwnerNode, arg5);
         }
 
-        protected delegate void ReceiveEventDelegate(IntPtr addon, EventType evt, uint a3, IntPtr a4, IntPtr a5);
+        int NextClick = 0;
+        internal void SendClickThrottled(IntPtr arg1, EventType arg2, uint arg3, void* target)
+        {
+            if (Environment.TickCount > NextClick){
+                SendClick(arg1, arg2, arg3, target, IntPtr.Zero);
+                NextClick = Environment.TickCount + ThrottleTime;
+            }else{
+                PluginLog.Log("Click Throttled");
+            }
+        }
+        internal void SendClickThrottled(IntPtr arg1, EventType arg2, uint arg3, void* target, IntPtr arg5)
+        {
+            if (Environment.TickCount > NextClick){
+                SendClick(arg1, arg2, arg3, target, arg5);
+                NextClick = Environment.TickCount + ThrottleTime;
+            }else{
+                PluginLog.Log("Click Throttled 2");
+            }
+        }
+
+        internal void SendClick(IntPtr eventListener, EventType type, uint which, void* target)
+        {
+            SendClick(eventListener, type, which, target, IntPtr.Zero);
+        }
+
+        internal void SendClick(IntPtr eventListener, EventType type, uint which, void* target, IntPtr inputData)
+        {
+            var receiveEvent = GetReceiveEventDelegate((AtkEventListener*)eventListener);
+
+            var eventData = Marshal.AllocHGlobal(0x40);
+            for (var i = 0; i < 0x40; i++) Marshal.WriteByte(eventData, i, 0);
+            Marshal.WriteIntPtr(eventData, 0x8, new IntPtr(target));
+            Marshal.WriteIntPtr(eventData, 0x10, eventListener);
+            if (inputData == IntPtr.Zero){
+                inputData = Marshal.AllocHGlobal(0x40);
+                for (var i = 0; i < 0x40; i++)
+                    Marshal.WriteByte(inputData, i, 0);
+            }
+
+            receiveEvent(eventListener, type, which, eventData, inputData);
+
+            Marshal.FreeHGlobal(eventData);
+            Marshal.FreeHGlobal(inputData);
+        }
 
         public enum EventType : ushort
         {
