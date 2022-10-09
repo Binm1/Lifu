@@ -57,8 +57,10 @@ namespace Lifu
         private Hook<LeveHook> leveHook;
         public IntPtr leveQuests;
         private IntPtr leveList;
+        public IntPtr RequestParam2_Base;
 
-        internal ClickManager clickManager;
+
+		internal ClickManager clickManager;
         private static RaptureAtkUnitManager* raptureAtkUnitManager;
 
         int LeveQuestId;
@@ -83,7 +85,7 @@ namespace Lifu
 
             TakenQeustParam1 = DalamudApi.SigScanner.GetStaticAddressFromSig("48 89 05 ?? ?? ?? ?? 48 8B 0D ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 45 84 ED");
             RequestParam1 = (long)DalamudApi.SigScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 83 C4 28 E9 ?? ?? ?? ?? 8B 05 ?? ?? ?? ?? 89 05 ?? ?? ?? ?? C3 CC CC CC 8B 05 ?? ?? ?? ?? 89 05 ?? ?? ?? ?? C3 CC CC CC F3 0F 10 05 ?? ?? ?? ??");
-            var RequestParam2_Base = DalamudApi.SigScanner.GetStaticAddressFromSig("48 8B 05 ?? ?? ?? ?? 4C 8B 40 18 45 8B 40 18");
+            RequestParam2_Base = DalamudApi.SigScanner.GetStaticAddressFromSig("48 8B 05 ?? ?? ?? ?? 4C 8B 40 18 45 8B 40 18");
             RequestParam2 = Marshal.ReadInt64(Marshal.ReadIntPtr(Marshal.ReadIntPtr(Marshal.ReadIntPtr(RequestParam2_Base) + 0x70) - 0x8 + 0x10180 + 0x70) + 0x5e8);
             leveList = DalamudApi.SigScanner.GetStaticAddressFromSig("48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 83 C4 28 E9 ?? ?? ?? ?? 48 83 EC 28 33 D2") + 0xa268 + 0xa8 + 0x54;
 
@@ -172,7 +174,7 @@ namespace Lifu
             }
         }
         [Command("/lifu")]
-        [HelpMessage("简化理符 [toggle|a|b|config]")]
+        [HelpMessage("简化理符 [toggle|a|b|config]\n第一次需要手动交下任务")]
 		public void LifuCommand(string command, string args){
             string[] array = args.Split(new char[]{' '});
             string subCommand = array[0];
@@ -363,7 +365,16 @@ namespace Lifu
             if (!Ready == true && RequestParam1 != 0)
             {//准备到提交框
                 if (Dirty) return;
-                requestHook.Original(RequestParam1, RequestParam2, itemSId, 0, 1);
+                if (RequestParam2==0)
+                {
+                    RequestParam2 = Marshal.ReadInt64(Marshal.ReadIntPtr(Marshal.ReadIntPtr(Marshal.ReadIntPtr(RequestParam2_Base) + 0x70) - 0x8 + 0x10180 + 0x70) + 0x5e8);
+
+				}
+                else
+                {
+					requestHook.Original(RequestParam1, RequestParam2, itemSId, 0, 1);
+				}
+               
             }
             if (Ready)
             {

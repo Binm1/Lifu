@@ -9,14 +9,13 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<UseWindowsForms>true</UseWindowsForms>
 		<ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-		<OutputPath>D:\Games\FFXIVLauncher\XIVLauncherCN\Roaming\devPlugins\Lifu\</OutputPath>
 		<NoWarn>CA1416</NoWarn>
 		<Nullable>disable</Nullable>
 		<AssemblyName>LiFu</AssemblyName>
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+		<DalamudLibPath>E:\Dalamud\addon\Hooks\dev\</DalamudLibPath>
 	</PropertyGroup>
 
 	<PropertyGroup>
