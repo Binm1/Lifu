@@ -452,7 +452,7 @@ namespace Lifu
                     .Where(i => i.Name.ToString() == name);
                 foreach (var actor in Actors) FoucsObject = actor;
                 accessGameObject(DalamudApi.TargetManager.Address, FoucsObject.Address, (char)0);
-                MouseDo.SendKeycode((uint)VirtualKey.ESCAPE);
+                //MouseDo.SendKeycode((uint)VirtualKey.ESCAPE);
             });
         }
         public static AtkUnitBase* GetFocusedAddon(){
