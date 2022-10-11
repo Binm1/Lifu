@@ -301,7 +301,7 @@ namespace Lifu
             var a = (AtkTextNode*)textComponent;
 
             if (LeveNpc1 == Marshal.PtrToStringUTF8((IntPtr)a->NodeText.StringPtr)
-                    && !(existLeve(LeveQuestId) || takenLeve(LeveTakenGui))
+                    && !(existLeve(LeveQuestId) )
                 ){
                 var b = Marshal.ReadInt64(TakenQeustParam1);
                 if (b > 0)takenQeustHook.Original(b, LeveQuestId);
