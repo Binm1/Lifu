@@ -34,6 +34,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\ClickLib-master\ClickLib\ClickLib.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Reference Include="Newtonsoft.Json">
 			<HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
 			<Private>False</Private>
