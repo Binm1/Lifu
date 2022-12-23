@@ -1,1 +1,1 @@
-/Lifu kai
+/Lifu toggle
